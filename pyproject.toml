@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snapdox"
+version = "1.0.0"
+description = "Local file conversion — documents and images, no uploads"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "PyMuPDF>=1.26.7",   # PDF rendering, text extraction, image-to-PDF
+    "pdf2docx>=0.5.13",  # PDF -> Word layout reconstruction
+    "python-docx>=1.1",  # Word output for image and text modes
+    "Pillow>=10",        # raster image conversion
+    "vtracer>=0.6.15",   # raster -> SVG path tracing
+    "svglib>=2.0",       # SVG -> PDF, pure Python (no Cairo needed)
+    "reportlab>=4.4.3",  # svglib's rendering backend
+    "openpyxl>=3.1",     # spreadsheet reading in tests
+    "Flask>=3.0",        # web UI
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+snapdox = "snapdox.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["snapdox*", "web*"]
+
+[tool.setuptools.package-data]
+web = ["templates/*.html", "static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
