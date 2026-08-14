@@ -153,17 +153,49 @@ def _options_from_form(form) -> Options:
     return opts
 
 
+def lan_address() -> str | None:
+    """This machine's address on the local network, as other devices see it.
+
+    Opening a UDP socket toward a public address makes the OS pick the
+    interface it would really route through. Nothing is actually sent.
+    """
+    import socket
+
+    probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        probe.connect(("8.8.8.8", 80))
+        return probe.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        probe.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the SnapDox web UI.")
     parser.add_argument("--host", default="127.0.0.1", help="bind address (default: localhost only)")
     parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument(
+        "--lan",
+        action="store_true",
+        help="serve to your phone and other devices on the same Wi-Fi, printing the address to use",
+    )
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args(argv)
 
+    if args.lan:
+        args.host = "0.0.0.0"
+
     if args.host not in ("127.0.0.1", "localhost"):
+        address = lan_address()
+        if address:
+            print(f"\n  On this computer : http://127.0.0.1:{args.port}")
+            print(f"  On your phone    : http://{address}:{args.port}")
         print(
-            f"! Serving on {args.host} exposes SnapDox to your network. "
-            "It has no authentication — only do this on a network you trust."
+            "\n  ! Everyone on this network can reach SnapDox — it has no password.\n"
+            "    Fine on your own Wi-Fi; don't do it on public or shared networks.\n"
+            "    Phone can't connect? Windows Firewall is blocking the port —\n"
+            "    the README has the one-line fix.\n"
         )
 
     print(f"SnapDox {__version__}  ->  http://{args.host}:{args.port}")
