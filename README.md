@@ -20,6 +20,37 @@ snapdox logo.png --to svg                # real vector tracing
 snapdox --list                           # everything that can become everything
 ```
 
+## Using it from your phone
+
+SnapDox binds to localhost by default, so nothing outside the machine can reach it. To use it from
+a phone or tablet on the same Wi-Fi:
+
+```bash
+python serve.py --lan
+```
+
+It prints the address to type on the other device, e.g. `http://192.168.1.42:5000`.
+
+Two things to know:
+
+- **There is no password.** Anyone on that network can reach it and convert files on your machine.
+  Fine on your own Wi-Fi; don't do it on café, hotel, or shared-building networks.
+- **If the phone can't connect, Windows Firewall is blocking the port.** Allow it once, from an
+  **Administrator** PowerShell:
+
+  ```powershell
+  New-NetFirewallRule -DisplayName "SnapDox" -Direction Inbound -Protocol TCP -LocalPort 5000 -Action Allow -Profile Private
+  ```
+
+  Use `-Profile Private` for a home network, or `Public` if Windows has classified your Wi-Fi that
+  way — `Get-NetConnectionProfile` tells you which. Undo it later with
+  `Remove-NetFirewallRule -DisplayName "SnapDox"`.
+
+Reaching it from *outside* your network is a different problem. SnapDox is a Python server that
+shells out to LibreOffice, so it cannot be hosted on GitHub Pages or any other static host. That
+needs a private mesh network (Tailscale), a tunnel (Cloudflare), or a real container deployment —
+and authentication added first.
+
 ## What it converts
 
 | From | To | How |
